@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Test Huruf | Cari Huruf yang Sama</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;color:#202124;
+display:flex;justify-content:center;min-height:100vh;padding:24px}
+.app{width:min(760px,100%);background:#fff;border-radius:18px;padding:24px;
+box-shadow:0 8px 30px rgba(0,0,0,.10)}
+h1{text-align:center;margin:0 0 6px;font-size:28px}
+.sub{text-align:center;color:#666;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:#f1f3f6;border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:22px;margin-top:3px}
+.label{font-size:12px;color:#666}
+.question{min-height:150px;border:2px solid #e1e5eb;border-radius:14px;
+display:flex;flex-direction:column;justify-content:center;align-items:center;margin-bottom:18px}
+.letters{font-size:clamp(30px,8vw,58px);font-weight:700;letter-spacing:9px;
+font-variant-numeric:tabular-nums}
+.hint{margin-top:10px;color:#777;font-size:14px}
+.answers{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+button{border:0;border-radius:12px;background:#202124;color:#fff;font-size:22px;
+font-weight:700;padding:14px 8px;cursor:pointer}
+button:hover{transform:translateY(-1px)}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.controls{display:flex;gap:10px;margin-top:16px}
+.controls button{flex:1;font-size:16px;padding:12px;background:#5f6368}
+.controls .start{background:#1a73e8}
+.result{display:none;text-align:center;padding:20px;border:2px solid #e1e5eb;
+border-radius:14px;margin-top:18px}
+.result h2{margin-top:0}
+.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+.result-item{background:#f1f3f6;border-radius:10px;padding:12px}
+.result-item b{display:block;font-size:24px}
+.message{margin-top:12px;font-weight:600}
+@media(max-width:520px){
+.stats{grid-template-columns:repeat(2,1fr)}
+.letters{letter-spacing:4px}
+.answers{grid-template-columns:repeat(5,1fr)}
+button{padding:13px 5px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Speed Test Huruf</h1>
+<div class="sub">Cari 1 huruf yang muncul dua kali</div>
+
+<div class="stats">
+<div class="stat"><span class="label">Soal</span><b id="q">0 / 500</b></div>
+<div class="stat"><span class="label">Waktu</span><b id="time">15:00</b></div>
+<div class="stat"><span class="label">Benar</span><b id="correct">0</b></div>
+<div class="stat"><span class="label">Akurasi</span><b id="accuracy">—</b></div>
+</div>
+
+<div class="question">
+<div class="letters" id="letters">Tekan MULAI</div>
+<div class="hint" id="hint">Temukan huruf yang muncul dua kali.</div>
+</div>
+
+<div class="answers" id="answers"></div>
+
+<div class="controls">
+<button class="start" id="start">MULAI</button>
+<button id="reset">RESET</button>
+</div>
+
+<div class="result" id="result">
+<h2>Hasil Latihan</h2>
+<div class="result-grid">
+<div class="result-item">Dikerjakan<b id="rTotal">0</b></div>
+<div class="result-item">Benar<b id="rCorrect">0</b></div>
+<div class="result-item">Salah<b id="rWrong">0</b></div>
+<div class="result-item">Akurasi<b id="rAccuracy">0%</b></div>
+<div class="result-item">Rata-rata<b id="rAvg">0 ms</b></div>
+<div class="result-item">Tercepat<b id="rFast">0 ms</b></div>
+</div>
+<div class="message" id="message"></div>
+</div>
+</div>
+
+<script>
+const MAX=500,LIMIT=15*60*1000;
+const LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let started=false,finished=false,currentAnswer=null,questionNo=0,correct=0,wrong=0;
+let startedAt=0,questionStartedAt=0,timer=null,times=[];
+
+const $=id=>document.getElementById(id);
+const answers=$("answers");
+
+for(const ch of LETTERS){
+  const b=document.createElement("button");
+  b.textContent=ch;b.disabled=true;
+  b.addEventListener("click",()=>answer(ch));
+  answers.appendChild(b);
+}
+
+const answerButtons=[...answers.querySelectorAll("button")];
+
+function shuffle(a){
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+ return a;
+}
+
+function newQuestion(){
+ if(finished)return;
+ if(questionNo>=MAX){finish();return}
+ questionNo++;
+
+ // 9 huruf unik + 1 huruf yang diulang.
+ const pool=shuffle([...LETTERS]);
+ const chosen=pool.slice(0,9);
+ const duplicate=chosen[Math.floor(Math.random()*chosen.length)];
+ chosen.push(duplicate);
+ shuffle(chosen);
+
+ currentAnswer=duplicate;
+ $("letters").textContent=chosen.join(" ");
+ $("hint").textContent="Pilih huruf yang muncul dua kali";
+ $("q").textContent=`${questionNo} / ${MAX}`;
+ questionStartedAt=performance.now();
+}
+
+function start(){
+ if(started&&!finished)return;
+ started=true;finished=false;questionNo=0;correct=0;wrong=0;times=[];
+ $("result").style.display="none";
+ $("correct").textContent="0";$("accuracy").textContent="—";
+ $("start").textContent="BERJALAN";
+ answerButtons.forEach(b=>b.disabled=false);
+ startedAt=performance.now();
+ newQuestion();
+ timer=setInterval(updateTime,100);
+ updateTime();
+}
+
+function updateTime(){
+ if(!started||finished)return;
+ const remain=Math.max(0,LIMIT-(performance.now()-startedAt));
+ const sec=Math.ceil(remain/1000);
+ $("time").textContent=`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+ if(remain<=0)finish();
+}
+
+function answer(ch){
+ if(!started||finished)return;
+ const rt=performance.now()-questionStartedAt;
+ times.push(rt);
+ if(ch===currentAnswer)correct++;else wrong++;
+ $("correct").textContent=correct;
+ const total=correct+wrong;
+ $("accuracy").textContent=(correct/total*100).toFixed(1)+"%";
+ newQuestion();
+}
+
+function finish(){
+ if(finished)return;
+ finished=true;clearInterval(timer);
+ answerButtons.forEach(b=>b.disabled=true);
+ $("start").textContent="MULAI LAGI";
+ const total=correct+wrong;
+ const avg=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
+ const fast=times.length?Math.min(...times):0;
+ const acc=total?correct/total*100:0;
+ $("rTotal").textContent=total;
+ $("rCorrect").textContent=correct;
+ $("rWrong").textContent=wrong;
+ $("rAccuracy").textContent=acc.toFixed(1)+"%";
+ $("rAvg").textContent=avg+" ms";
+ $("rFast").textContent=fast+" ms";
+ $("message").textContent=total>=500
+ ? "500 soal selesai. Coba pertahankan ritme dengan akurasi setinggi mungkin."
+ : "Waktu habis. Latihan berikutnya fokus menjaga ritme saat mulai bosan.";
+ $("result").style.display="block";
+ $("letters").textContent="SELESAI";
+ $("hint").textContent="Latihan selesai.";
+}
+
+function reset(){
+ clearInterval(timer);started=false;finished=false;questionNo=0;correct=0;wrong=0;times=[];
+ $("q").textContent="0 / 500";$("time").textContent="15:00";$("correct").textContent="0";
+ $("accuracy").textContent="—";$("letters").textContent="Tekan MULAI";
+ $("hint").textContent="Temukan huruf yang muncul dua kali.";
+ $("start").textContent="MULAI";$("result").style.display="none";
+ answerButtons.forEach(b=>b.disabled=true);
+}
+
+answerButtons.forEach(b=>b.addEventListener("click",()=>answer(b.textContent)));
+document.addEventListener("keydown",e=>{
+ const key=e.key.toUpperCase();
+ if(LETTERS.includes(key))answer(key);
+ if(e.key===" "&&!started)start();
+});
+$("start").addEventListener("click",start);
+$("reset").addEventListener("click",reset);
+</script>
+</body>
+</html>
