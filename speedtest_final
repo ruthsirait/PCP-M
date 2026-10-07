@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Test Angka 0–9</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f6fb;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #202124;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.app {
+  width: min(800px, 100%);
+  background: white;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+h1 {
+  text-align: center;
+  margin: 0 0 6px;
+}
+
+.sub {
+  text-align: center;
+  color: #666;
+  margin-bottom: 18px;
+}
+
+/* TIME */
+
+.setting {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.setting select {
+  padding: 9px 12px;
+  border: 1px solid #ccd1d8;
+  border-radius: 9px;
+  font-size: 15px;
+}
+
+/* STATS */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  background: #f1f3f6;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.label {
+  font-size: 12px;
+  color: #666;
+}
+
+.stat b {
+  display: block;
+  font-size: 21px;
+  margin-top: 4px;
+}
+
+/* QUESTION */
+
+.question {
+  height: 150px;
+  border: 2px solid #e1e5eb;
+  border-radius: 14px;
+  margin: 18px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.digits {
+  font-size: clamp(28px, 7vw, 52px);
+  font-weight: 700;
+  letter-spacing: 7px;
+}
+
+.hint {
+  margin-top: 10px;
+  color: #777;
+}
+
+/* KEYPAD */
+
+.answers {
+  max-width: 390px;
+  margin: auto;
+}
+
+.keyrow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.key {
+  height: 62px;
+  border: none;
+  border-radius: 14px;
+  background: #e9e9e9;
+  color: #202124;
+  font-size: 26px;
+  font-weight: 700;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 -3px 0 #d0d0d0,
+    0 2px 4px rgba(0,0,0,.08);
+
+  transition: .08s;
+}
+
+.key:active {
+  transform: scale(.96);
+}
+
+.key:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.utility {
+  color: #555;
+  background: #ededed;
+}
+
+/* CONTROL */
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.controls button {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  background: #5f6368;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.controls .start {
+  background: #1a73e8;
+}
+
+/* RESULT */
+
+.result {
+  display: none;
+  margin-top: 20px;
+  border: 2px solid #e1e5eb;
+  border-radius: 14px;
+  padding: 15px;
+}
+
+.result h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+/* GRAPH */
+
+.chartbox {
+  background: #242424;
+  border-radius: 10px;
+  padding: 8px;
+  overflow-x: auto;
+}
+
+.chartbox svg {
+  width: 100%;
+  min-width: 650px;
+  height: 300px;
+}
+
+.chartlegend {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: #666;
+  margin: 8px 2px 14px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.yellow {
+  background: #f2dc28;
+}
+
+.orange {
+  background: #f39a19;
+}
+
+/* RESULT DATA */
+
+.resultgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.ritem {
+  background: #f1f3f6;
+  border-radius: 9px;
+  padding: 10px;
+  text-align: center;
+}
+
+.ritem span {
+  font-size: 11px;
+  color: #666;
+}
+
+.ritem b {
+  display: block;
+  font-size: 19px;
+  margin-top: 4px;
+}
+
+/* MOBILE */
+
+@media(max-width:560px) {
+
+  body {
+    padding: 10px;
+  }
+
+  .app {
+    padding: 15px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resultgrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .key {
+    height: 58px;
+  }
+}
+</style>
+</head>
+
+
+<body>
+
+<main class="app">
+
+<h1>Speed Test Angka 0–9</h1>
+
+<div class="sub">
+Cari 1 angka yang hilang
+</div>
+
+
+<!-- PILIH WAKTU -->
+
+<div class="setting">
+
+Waktu:
+
+<select id="duration">
+
+<option value="1">1 menit</option>
+<option value="3">3 menit</option>
+<option value="5">5 menit</option>
+<option value="10">10 menit</option>
+<option value="15" selected>15 menit</option>
+<option value="20">20 menit</option>
+<option value="30">30 menit</option>
+
+</select>
+
+</div>
+
+
+<!-- STATISTIK -->
+
+<div class="stats">
+
+<div class="stat">
+<span class="label">Soal</span>
+<b id="q">0 / 500</b>
+</div>
+
+<div class="stat">
+<span class="label">Waktu</span>
+<b id="time">15:00</b>
+</div>
+
+<div class="stat">
+<span class="label">Benar</span>
+<b id="correct">0</b>
+</div>
+
+<div class="stat">
+<span class="label">Akurasi</span>
+<b id="accuracy">—</b>
+</div>
+
+</div>
+
+
+<!-- SOAL -->
+
+<div class="question">
+
+<div class="digits" id="digits">
+Tekan MULAI
+</div>
+
+<div class="hint">
+9 dari 10 angka 0–9 akan ditampilkan.
+</div>
+
+</div>
+
+
+<!-- KEYPAD -->
+
+<div class="answers" id="answers">
+</div>
+
+
+<!-- CONTROL -->
+
+<div class="controls">
+
+<button
+class="start"
+id="start">
+MULAI
+</button>
+
+<button
+id="reset">
+RESET
+</button>
+
+</div>
+
+
+<!-- HASIL -->
+
+<div
+class="result"
+id="result">
+
+<h2>Grafik Hasil</h2>
+
+
+<div class="chartbox">
+
+<svg
+id="resultChart"
+viewBox="0 0 760 300"
+preserveAspectRatio="none">
+</svg>
+
+</div>
+
+
+<div class="chartlegend">
+
+<span>
+<i class="dot yellow"></i>
+Benar
+</span>
+
+<span>
+<i class="dot orange"></i>
+Salah
+</span>
+
+</div>
+
+
+<div class="resultgrid">
+
+<div class="ritem">
+<span>Total Benar</span>
+<b id="rtc">0</b>
+</div>
+
+<div class="ritem">
+<span>Total Salah</span>
+<b id="rtw">0</b>
+</div>
+
+<div class="ritem">
+<span>Waktu</span>
+<b id="rtime">0 menit</b>
+</div>
+
+<div class="ritem">
+<span>Kecepatan</span>
+<b id="rspeed">0</b>
+</div>
+
+<div class="ritem">
+<span>Ketelitian</span>
+<b id="rprec">0</b>
+</div>
+
+<div class="ritem">
+<span>Kestabilan</span>
+<b id="rstab">0</b>
+</div>
+
+<div class="ritem">
+<span>Ketahanan</span>
+<b id="rend">0</b>
+</div>
+
+<div class="ritem">
+<span>Agregat</span>
+<b id="ragg">0</b>
+</div>
+
+<div class="ritem">
+<span>Akurasi</span>
+<b id="racc">0%</b>
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+
+<script>
+
+/* =========================
+   VARIABLES
+========================= */
+
+const MAX = 500;
+
+let limit = 15 * 60 * 1000;
+
+let run = false;
+let done = false;
+
+let qn = 0;
+let ok = 0;
+let bad = 0;
+
+let target = 0;
+
+let startedAt = 0;
+let questionStartedAt = 0;
+
+let timer = null;
+
+let times = [];
+
+let segCorrect = [];
+let segWrong = [];
+let segStart = 0;
+
+
+/* =========================
+   ELEMENT
+========================= */
+
+const $ = id =>
+document.getElementById(id);
+
+const answers =
+$("answers");
+
+
+/* =========================
+   KEYPAD
+========================= */
+
+const rows = [
+
+["1","2","3"],
+
+["4","5","6"],
+
+["7","8","9"],
+
+["*","0","#"]
+
+];
+
+
+rows.forEach(row => {
+
+const rowDiv =
+document.createElement("div");
+
+rowDiv.className =
+"keyrow";
+
+
+row.forEach(value => {
+
+const button =
+document.createElement("button");
+
+button.className =
+"key";
+
+button.textContent =
+value;
+
+button.disabled =
+true;
+
+
+/* HANYA ANGKA YANG BISA MENJADI JAWABAN */
+
+if (
+value >= "0" &&
+value <= "9"
+) {
+
+button.onclick = () =>
+answer(Number(value));
+
+}
+
+else {
+
+button.classList.add(
+"utility"
+);
+
+button.onclick = () => {};
+
+}
+
+
+rowDiv.appendChild(button);
+
+});
+
+
+answers.appendChild(rowDiv);
+
+});
+
+
+/* SEMUA BUTTON */
+
+const btns =
+[
+...answers.querySelectorAll(".key")
+];
+
+
+/* =========================
+   RANDOM
+========================= */
+
+function shuffle(array) {
+
+for (
+let i = array.length - 1;
+i > 0;
+i--
+) {
+
+const j =
+Math.floor(
+Math.random() * (i + 1)
+);
+
+[
+array[i],
+array[j]
+] =
+[
+array[j],
+array[i]
+];
+
+}
+
+return array;
+
+}
+
+
+/* =========================
+   NEXT QUESTION
+========================= */
+
+function nextQuestion() {
+
+if (done)
+return;
+
+if (qn >= MAX) {
+
+finish();
+return;
+
+}
+
+qn++;
+
+target =
+Math.floor(
+Math.random() * 10
+);
+
+
+/*
+9 ANGKA DITAMPILKAN
+1 ANGKA HILANG
+*/
+
+const numbers =
+shuffle(
+[...Array(10).keys()]
+.filter(
+x => x !== target
+)
+);
+
+
+/* tampilkan soal */
+
+$("digits").textContent =
+numbers.join(" ");
+
+
+/* update nomor soal */
+
+$("q").textContent =
+qn + " / " + MAX;
+
+
+/* mulai hitung reaction time */
+
+questionStartedAt =
+performance.now();
+
+}
+
+
+/* =========================
+   ANSWER
+========================= */
+
+function answer(value) {
+
+if (!run || done)
+return;
+
+
+/* reaction time */
+
+const reactionTime =
+performance.now()
+-
+questionStartedAt;
+
+times.push(
+reactionTime
+);
+
+
+/* segment 30 detik */
+
+const segment =
+Math.floor(
+(
+performance.now()
+-
+segStart
+) / 30000
+);
+
+while (
+segCorrect.length <= segment
+) {
+
+segCorrect.push(0);
+segWrong.push(0);
+
+}
+
+
+/* cek jawaban */
+
+if (
+value === target
+) {
+
+ok++;
+
+segCorrect[segment]++;
+
+}
+
+else {
+
+bad++;
+
+segWrong[segment]++;
+
+}
+
+
+/* update statistik */
+
+$("correct").textContent =
+ok;
+
+$("accuracy").textContent =
+(
+ok /
+(ok + bad) *
+100
+).toFixed(1)
++ "%";
+
+
+/* soal berikutnya */
+
+nextQuestion();
+
+}
+
+
+/* =========================
+   TIMER
+========================= */
+
+function tick() {
+
+const remaining =
+Math.max(
+0,
+limit -
+(
+performance.now()
+-
+startedAt
+)
+);
+
+const seconds =
+Math.ceil(
+remaining / 1000
+);
+
+const minutes =
+Math.floor(
+seconds / 60
+);
+
+const sec =
+seconds % 60;
+
+
+$("time").textContent =
+String(minutes)
+.padStart(2,"0")
++
+":"
++
+String(sec)
+.padStart(2,"0");
+
+
+if (
+remaining <= 0
+) {
+
+finish();
+
+}
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+function start() {
+
+if (
+run &&
+!done
+)
+return;
+
+
+/* ambil waktu */
+
+const minutes =
+Number(
+$("duration").value
+);
+
+limit =
+minutes *
+60 *
+1000;
+
+
+/* reset */
+
+run = true;
+done = false;
+
+qn = 0;
+ok = 0;
+bad = 0;
+
+times = [];
+
+segCorrect = [];
+segWrong = [];
+
+
+/* waktu mulai */
+
+startedAt =
+performance.now();
+
+segStart =
+startedAt;
+
+
+/* tombol aktif */
+
+btns.forEach(
+button => {
+
+button.disabled =
+false;
+
+}
+);
+
+
+/* dropdown dikunci */
+
+$("duration").disabled =
+true;
+
+
+/* tombol */
+
+$("start").textContent =
+"BERJALAN";
+
+
+/* soal pertama */
+
+nextQuestion();
+
+
+/* timer */
+
+clearInterval(timer);
+
+timer =
+setInterval(
+tick,
+100
+);
+
+tick();
+
+}
+
+
+/* =========================
+   FINISH
+========================= */
+
+function finish() {
+
+if (done)
+return;
+
+
+done = true;
+run = false;
+
+
+/* stop timer */
+
+clearInterval(timer);
+
+
+/* matikan keypad */
+
+btns.forEach(
+button => {
+
+button.disabled =
+true;
+
+}
+);
+
+
+/* aktifkan dropdown */
+
+$("duration").disabled =
+false;
+
+
+$("start").textContent =
+"MULAI LAGI";
+
+
+/* statistik */
+
+const total =
+ok + bad;
+
+const elapsed =
+(
+performance.now()
+-
+startedAt
+)
+/
+60000;
+
+
+const accuracy =
+total
+?
+ok / total * 100
+:
+0;
+
+
+/* speed = benar / menit */
+
+const speed =
+elapsed
+?
+ok / elapsed
+:
+0;
+
+
+/* ketelitian */
+
+const precision =
+accuracy;
+
+
+/* kestabilan */
+
+const average =
+segCorrect.length
+?
+segCorrect.reduce(
+(a,b) => a + b,
+0
+)
+/
+segCorrect.length
+:
+0;
+
+
+const deviation =
+segCorrect.length
+?
+Math.sqrt(
+segCorrect.reduce(
+(a,b) =>
+a +
+Math.pow(
+b - average,
+2
+),
+0
+)
+/
+segCorrect.length
+)
+:
+0;
+
+
+const stability =
+Math.max(
+0,
+Math.min(
+100,
+100 -
+(
+deviation /
+(average || 1)
+*
+100
+)
+)
+);
+
+
+/* ketahanan */
+
+const selectedMinutes =
+Number(
+$("duration").value
+);
+
+const endurance =
+Math.max(
+0,
+Math.min(
+100,
+elapsed /
+selectedMinutes *
+100
+)
+);
+
+
+/* agregat */
+
+const aggregate =
+(
+speed * 0.40
++
+precision * 0.25
++
+stability * 0.20
++
+endurance * 0.15
+);
+
+
+/* hasil */
+
+$("rtc").textContent =
+ok;
+
+$("rtw").textContent =
+bad;
+
+$("rtime").textContent =
+elapsed.toFixed(1)
++
+" menit";
+
+$("rspeed").textContent =
+speed.toFixed(1);
+
+$("rprec").textContent =
+precision.toFixed(1);
+
+$("rstab").textContent =
+stability.toFixed(1);
+
+$("rend").textContent =
+endurance.toFixed(1);
+
+$("ragg").textContent =
+aggregate.toFixed(1);
+
+$("racc").textContent =
+accuracy.toFixed(2)
++
+"%";
+
+
+drawChart();
+
+
+$("result").style.display =
+"block";
+
+
+$("digits").textContent =
+"SELESAI";
+
+}
+
+
+/* =========================
+   GRAPH
+========================= */
+
+function drawChart() {
+
+const svg =
+$("resultChart");
+
+const width = 760;
+const height = 300;
+
+const padding = 35;
+
+const count =
+Math.max(
+segCorrect.length,
+segWrong.length,
+1
+);
+
+
+const max =
+Math.max(
+5,
+...segCorrect,
+...segWrong
+);
+
+
+let output = "";
+
+
+/* GRID */
+
+const step =
+Math.max(
+1,
+Math.ceil(max / 7)
+);
+
+
+for (
+let value = 0;
+value <= max;
+value += step
+) {
+
+const y =
+height -
+padding -
+(
+value / max
+*
+(height - padding * 2)
+);
+
+
+output +=
+`
+<line
+x1="${padding}"
+y1="${y}"
+x2="${width-padding}"
+y2="${y}"
+stroke="#666"
+stroke-width="1"
+/>
+
+<text
+x="5"
+y="${y+4}"
+fill="#ddd"
+font-size="12"
+>
+${value}
+</text>
+`;
+
+}
+
+
+/* POINTS */
+
+function makePoints(data) {
+
+return data
+.map(
+(value,index) => {
+
+const x =
+padding
++
+index *
+(
+(width - padding * 2)
+/
+Math.max(
+1,
+count - 1
+)
+);
+
+const y =
+height -
+padding -
+(
+value / max
+*
+(height - padding * 2)
+);
+
+return `${x},${y}`;
+
+}
+)
+.join(" ");
+
+}
+
+
+/* BENAR */
+
+output +=
+`
+<polyline
+fill="none"
+stroke="#f2dc28"
+stroke-width="4"
+points="${makePoints(segCorrect)}"
+/>
+`;
+
+
+/* SALAH */
+
+output +=
+`
+<polyline
+fill="none"
+stroke="#f39a19"
+stroke-width="3"
+points="${makePoints(segWrong)}"
+/>
+`;
+
+
+svg.innerHTML =
+output;
+
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+function reset() {
+
+clearInterval(timer);
+
+run = false;
+done = false;
+
+qn = 0;
+ok = 0;
+bad = 0;
+
+times = [];
+
+segCorrect = [];
+segWrong = [];
+
+
+$("q").textContent =
+"0 / 500";
+
+$("time").textContent =
+$("duration").value.padStart(2,"0")
++
+":00";
+
+$("correct").textContent =
+"0";
+
+$("accuracy").textContent =
+"—";
+
+$("digits").textContent =
+"Tekan MULAI";
+
+$("result").style.display =
+"none";
+
+$("start").textContent =
+"MULAI";
+
+$("duration").disabled =
+false;
+
+
+btns.forEach(
+button => {
+
+button.disabled =
+true;
+
+}
+);
+
+
+/* kosongkan grafik */
+
+$("resultChart").innerHTML =
+"";
+
+}
+
+
+/* =========================
+   EVENTS
+========================= */
+
+$("start").onclick =
+start;
+
+$("reset").onclick =
+reset;
+
+
+/* KEYBOARD FISIK */
+
+document.onkeydown =
+event => {
+
+if (
+event.key >= "0" &&
+event.key <= "9"
+) {
+
+answer(
+Number(event.key)
+);
+
+}
+
+if (
+event.key === " " &&
+!run
+) {
+
+start();
+
+}
+
+};
+
+</script>
+
+</body>
+</html>
