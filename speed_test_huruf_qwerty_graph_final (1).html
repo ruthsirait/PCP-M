@@ -1,0 +1,76 @@
+<!doctype html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Speed Test Huruf</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f4f6fb;font-family:Arial,sans-serif;display:flex;justify-content:center;padding:20px;min-height:100vh}.app{width:min(760px,100%);background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 30px #0001}h1{text-align:center}.sub{text-align:center;color:#666}.setting{text-align:center;margin:16px}.setting select{padding:9px;border-radius:9px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{text-align:center;background:#f1f3f6;padding:10px;border-radius:10px}.label{font-size:12px;color:#666}.stat b{display:block;font-size:21px}.question{height:150px;border:2px solid #e1e5eb;border-radius:14px;margin:18px 0;display:flex;flex-direction:column;align-items:center;justify-content:center}.letters{font-size:clamp(28px,7vw,52px);font-weight:700;letter-spacing:7px}.hint{margin-top:10px;color:#777}.answers{max-width:430px;margin:auto}.keyrow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:9px}.key{height:58px;border:0;border-radius:12px;background:#e9e9e9;color:#202124;font-size:25px;font-weight:700;cursor:pointer;box-shadow:inset 0 -2px 0 #d0d0d0}.key:disabled{opacity:.45;cursor:not-allowed}.key.utility{color:#555;background:#ededed}
+.krow{display:grid;gap:10px}
+.krow.r1{grid-template-columns:repeat(10,1fr)}
+.krow.r2{grid-template-columns:repeat(9,1fr);padding:0 5%}
+.krow.r3{grid-template-columns:repeat(7,1fr);padding:0 15%}
+.krow.utility{grid-template-columns:1fr 1fr 2.5fr 1.5fr}
+.krow button{min-height:58px}.answers button,.controls button{border:0;border-radius:12px;padding:14px;background:#202124;color:white;font-size:21px;font-weight:700}.answers button:disabled{opacity:.4}.controls{display:flex;gap:10px;margin-top:15px}.controls button{flex:1;font-size:16px;background:#5f6368}.controls .start{background:#1a73e8}.chartbox{background:#242424;border-radius:10px;padding:8px;overflow-x:auto}.chartbox svg{width:100%;min-width:650px;height:300px}.chartlegend{display:flex;gap:18px;font-size:13px;color:#666;margin:7px 2px 12px}.ydot,.odot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.ydot{background:#f2dc28}.odot{background:#f39a19}.result{display:none;margin-top:18px;text-align:center;border:2px solid #e1e5eb;border-radius:14px;padding:18px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.item{background:#f1f3f6;padding:10px;border-radius:9px}.item b{display:block;font-size:22px}@media(max-width:520px){
+.stats{grid-template-columns:repeat(2,1fr)}
+.letters{letter-spacing:3px}
+.answers{gap:7px}
+.krow{gap:7px}
+.krow button{min-height:50px;font-size:18px}
+.krow.r2{padding:0 4%}
+.krow.r3{padding:0 10%}
+}</style></head>
+<body><main class="app"><h1>Speed Test Huruf A–Z</h1><div class="sub">Cari 1 huruf yang muncul dua kali</div>
+<div class="setting">Waktu: <select id="duration"><option value="1">1 menit</option><option value="3">3 menit</option><option value="5">5 menit</option><option value="10">10 menit</option><option value="15" selected>15 menit</option><option value="20">20 menit</option><option value="30">30 menit</option></select></div>
+<div class="stats"><div class="stat"><span class="label">Soal</span><b id="q">0 / 500</b></div><div class="stat"><span class="label">Waktu</span><b id="time">15:00</b></div><div class="stat"><span class="label">Benar</span><b id="correct">0</b></div><div class="stat"><span class="label">Akurasi</span><b id="accuracy">—</b></div></div>
+<div class="question"><div class="letters" id="letters">Tekan MULAI</div><div class="hint">Temukan huruf yang muncul dua kali.</div></div>
+<div class="answers" id="answers"></div><div class="controls"><button class="start" id="start">MULAI</button><button id="reset">RESET</button></div>
+<div class="result" id="result"><div class="chartbox"><svg id="resultChart" viewBox="0 0 760 330" preserveAspectRatio="none"></svg></div>
+<div class="chartlegend"><span><i class="ydot"></i>Benar</span><span><i class="odot"></i>Salah</span></div><h2>Hasil</h2><div class="grid"><div class="item">Dikerjakan<b id="rt">0</b></div><div class="item">Benar<b id="rc">0</b></div><div class="item">Salah<b id="rw">0</b></div><div class="item">Akurasi<b id="ra">0%</b></div><div class="item">Rata-rata<b id="rav">0 ms</b></div><div class="item">Tercepat<b id="rf">0 ms</b></div></div></div></main>
+<script>
+const MAX=500,LET="ABCDEFGHIJKLMNOPQRSTUVWXYZ";let limit=900000,run=false,done=false,qn=0,ok=0,bad=0,target="",t0=0,qt=0,times=[],timer;
+const $=x=>document.getElementById(x),A=$("answers");
+const rows = [
+  "QWERTYUIOP",
+  "ASDFGHJKL",
+  "ZXCVBNM"
+];
+rows.forEach((row,ri)=>{
+  const div=document.createElement("div");
+  div.className="krow "+(["r1","r2","r3"][ri]);
+  for(const c of row){
+    const b=document.createElement("button");
+    b.textContent=c;b.disabled=true;b.onclick=()=>answer(c);
+    div.appendChild(b);
+  }
+  A.appendChild(div);
+});
+const util=document.createElement("div");
+util.className="krow utility";
+["SHIFT","123","SPACE","ENTER"].forEach(label=>{
+  const b=document.createElement("button");
+  b.textContent=label;b.disabled=true;
+  if(label==="SHIFT"||label==="123"||label==="SPACE"||label==="ENTER"){
+    b.onclick=()=>{};
+  }
+  util.appendChild(b);
+});
+A.appendChild(util);
+const btns=[...A.querySelectorAll("button")];function sh(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function next(){if(done)return;if(qn>=MAX)return finish();qn++;let a=sh([...LET]).slice(0,9);target=a[Math.floor(Math.random()*9)];a.push(target);sh(a);$("letters").textContent=a.join(" ");$("q").textContent=qn+" / "+MAX;qt=performance.now()}
+function answer(x){if(!run||done)return;times.push(performance.now()-qt);x===target?ok++:bad++;$("correct").textContent=ok;$("accuracy").textContent=(ok/(ok+bad)*100).toFixed(1)+"%";next()}
+function tick(){let r=Math.max(0,limit-(performance.now()-t0)),s=Math.ceil(r/1000);$("time").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");if(!r)finish()}
+function start(){if(run&&!done)return;limit=+$("duration").value*60000;run=true;done=false;qn=ok=bad=0;times=[];$("duration").disabled=true;btns.forEach(b=>b.disabled=false);$("start").textContent="BERJALAN";t0=performance.now();next();clearInterval(timer);timer=setInterval(tick,100);tick()}
+function finish(){if(done)return;done=true;run=false;clearInterval(timer);btns.forEach(b=>b.disabled=true);$("duration").disabled=false;$("start").textContent="MULAI LAGI";let n=times.length,av=n?Math.round(times.reduce((a,b)=>a+b,0)/n):0,fa=n?Math.min(...times):0;$("rt").textContent=n;$("rc").textContent=ok;$("rw").textContent=bad;$("ra").textContent=(n?ok/n*100:0).toFixed(1)+"%";$("rav").textContent=av+" ms";$("rf").textContent=fa+" ms";drawResultChart();$("result").style.display="block";$("letters").textContent="SELESAI"}
+function reset(){clearInterval(timer);run=done=false;qn=ok=bad=0;times=[];$("q").textContent="0 / 500";$("time").textContent=$("duration").value.padStart(2,"0")+":00";$("correct").textContent=0;$("accuracy").textContent="—";$("letters").textContent="Tekan MULAI";$("result").style.display="none";$("start").textContent="MULAI";$("duration").disabled=false;btns.forEach(b=>b.disabled=true)}
+$("start").onclick=start;$("reset").onclick=reset;document.onkeydown=e=>{let k=e.key.toUpperCase();if(LET.includes(k))answer(k);if(e.key===" "&&!run)start}
+function drawResultChart(){
+  const svg=document.getElementById("resultChart"); if(!svg)return;
+  const w=760,h=300,p=35,n=Math.max(segCorrect.length,segWrong.length,1);
+  const max=Math.max(5,...segCorrect,...segWrong);
+  let s="";
+  for(let y=0;y<=max;y+=Math.max(1,Math.ceil(max/7))){
+    const yy=h-p-(y/max)*(h-2*p);
+    s+=`<line x1="${p}" y1="${yy}" x2="${w-p}" y2="${yy}" stroke="#666" stroke-width="1"/>`;
+    s+=`<text x="6" y="${yy+4}" fill="#ddd" font-size="12">${y}</text>`;
+  }
+  function pts(a){return a.map((v,i)=>`${p+i*((w-2*p)/Math.max(1,n-1))},${h-p-(v/max)*(h-2*p)}`).join(" ")}
+  s+=`<polyline fill="none" stroke="#f2dc28" stroke-width="4" points="${pts(segCorrect)}"/>`;
+  s+=`<polyline fill="none" stroke="#f39a19" stroke-width="3" points="${pts(segWrong)}"/>`;
+  svg.innerHTML=s;
+}
+</script></body></html>
